@@ -1,4 +1,4 @@
-# TCROC-Cadenas-Markov-SSRC-Series-Economicas
+# TCRA-Cadenas-Markov-SSRC-Series-Economicas
 
 **Modelado de Series Temporales Económicas: De la Tasa de Cambio Relativa a los Modelos de Transición de Régimen Estocásticamente Estructurados**
 
@@ -25,7 +25,7 @@ Tasa de Cambio Relativa → K-Means → Cadena de Markov → NNLS → SSRC
 ## Estructura del repositorio
 
 ```
-TCROC-Cadenas-Markov-SSRC-Series-Economicas/
+TCRA-Cadenas-Markov-SSRC-Series-Economicas/
 │
 ├── cap2_familias_TCRA/           # Cap. 2-3: Variantes del operador
 │   ├── src/                      # Módulos: config, modelos, evaluación
