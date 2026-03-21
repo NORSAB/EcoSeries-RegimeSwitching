@@ -9,7 +9,7 @@ Uso: python pipeline.py
 """
 import os, sys, io, numpy as np, pandas as pd
 from scipy.optimize import nnls
-from numpy import kron, identity, ones, zeros, diag
+from numpy import zeros
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
@@ -87,22 +87,37 @@ def estimate_P_from_C(C):
 
 
 def SRep(datos, ss):
-    """Estimación NNLS/SRep. Replica notebook Cell 2."""
+    """Estimador NNLS de matriz de transicion estocastica por columnas."""
     n0 = datos.shape[0]
-    S0 = datos[:, :ss]
-    S0 = kron(S0, identity(n0)).T
-    S1 = S0.T @ ((datos[:, 1:(1 + ss)]).T).reshape(ss * n0)
-    C_mat = kron(identity(n0), ones((1, n0)))
-    Mr = zeros((n0**2 + n0, n0**2))
+    if ss >= datos.shape[1]:
+        ss = datos.shape[1] - 1
+
+    # 1. Matriz de diseno S0 y vector objetivo S1
+    S0_data = datos[:, :ss]
+    S0 = np.kron(S0_data, np.identity(n0)).T
+    S1 = S0.T @ (datos[:, 1:(1 + ss)].T).reshape(ss * n0)
+
+    # 2. Restriccion de suma unitaria
+    C_mat = np.kron(np.identity(n0), np.ones((1, n0)))
+
+    # 3. Sistema aumentado
+    Mr = np.zeros((n0**2 + n0, n0**2))
     Mr[:n0**2, :] = S0.T @ S0
     Mr[n0**2:, :] = C_mat
-    rhs = zeros((n0**2 + n0))
+
+    rhs = np.zeros((n0**2 + n0))
     rhs[:n0**2] = S1
     rhs[n0**2:] = 1
-    c = zeros((n0**2, 1))
-    c[:, 0] = nnls(Mr, rhs)[0]
-    Pr = c.reshape(n0, n0).T
-    Pr = Pr @ diag(1 / sum(Pr))
+
+    # 4. Resolver NNLS
+    p_flat = nnls(Mr, rhs)[0]
+
+    # 5. Recomponer y normalizar
+    Pr = p_flat.reshape(n0, n0).T
+    col_sums = Pr.sum(axis=0)
+    col_sums[col_sums == 0] = 1  # Proteccion contra division por cero
+    Pr = Pr / col_sums
+
     return Pr
 
 
